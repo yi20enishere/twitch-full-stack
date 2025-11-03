@@ -1,0 +1,60 @@
+spring:
+    jackson:
+        default-property-inclusion: non_null
+        property-naming-strategy: SNAKE_CASE
+    cloud:
+        openfeign:
+            oauth2:
+                enabled: true
+                clientRegistrationId: twitch
+            client:
+                config:
+                    twitch-api:
+
+
+                        url: https://api.twitch.tv/helix
+                        loggerLevel: basic
+                        default-request-headers:
+                            Client-Id: "${TWITCH_CLIENT_ID}"
+    security:
+        oauth2:
+            client:
+                registration:
+                    twitch:
+                        authorization-grant-type: client_credentials
+                        client-authentication-method: client_secret_post
+                        client-id: "${TWITCH_CLIENT_ID}"
+                        client-secret: "${TWITCH_CLIENT_SECRET}"
+                provider:
+                    twitch:
+                        token-uri: https://id.twitch.tv/oauth2/token
+    datasource:  # data base 在哪里
+        url: jdbc:mysql://${DATABASE_URL:localhost}:${DATABASE_PORT:3306}/twitch?createDatabaseIfNotExist=true
+        username: ${DATABASE_USERNAME:root}
+        password: ${DATABASE_PASSWORD:secret}  # 环境变量
+        driver-class-name: com.mysql.cj.jdbc.Driver
+    sql:
+        init:  #初始化创建table
+            mode: ${DATABASE_INIT:always}
+            schema-locations: "classpath:database-init.sql"
+    cache:
+        caffeine:
+            spec: expireAfterWrite=1m
+
+
+
+# json文件配置，只包含不是null的信息，不要显示是null的内容
+# yml是一个通用的文件格式
+# application.yml 是 Spring Boot 的“应用配置总控台”。
+# 你把“环境无关/有关”的参数写在这，程序启动时按约定加载，代码里用 @Value 或 @ConfigurationProperties 自动绑定，零硬编码。
+# 把“会变的参数”交给 application.yml，把“不会变的逻辑”留在代码里；环境切换靠 profile，覆盖靠优先级。
+# 写清楚配置，部署就不抓瞎
+# logging的设置：可以打印出来所有的信息，log一下，手写信息不全了
+logging:
+    level:
+        org.apache.coyote.http11.Http11InputBuffer: TRACE # Incoming http requests
+        com.laioffer.twitch.external.TwitchApiClient: DEBUG
+        org.springframework.jdbc.datasource.init: DEBUG
+        org.springframework.jdbc.core: DEBUG # SQL
+
+
